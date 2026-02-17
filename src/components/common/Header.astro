@@ -5,11 +5,12 @@ interface Props {
 
 const { transparent = false } = Astro.props;
 const currentPath = Astro.url.pathname;
+const base = import.meta.env.BASE_URL;
 
 const navLinks = [
-  { href: '/', label: 'Inicio' },
-  { href: '/catalogo', label: 'Catálogo' },
-  { href: '/sobre-nosotros', label: 'Sobre Nosotros' },
+  { href: `${base}`, label: 'Inicio' },
+  { href: `${base}catalogo`, label: 'Catálogo' },
+  { href: `${base}sobre-nosotros`, label: 'Sobre Nosotros' },
 ];
 ---
 
@@ -22,7 +23,7 @@ const navLinks = [
 >
   <nav class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between h-16 lg:h-20">
     <!-- Logo -->
-    <a href="/" class="flex items-center gap-2 group" transition:name="logo">
+    <a href={base} class="flex items-center gap-2 group" transition:name="logo">
       <span class="text-primary font-heading text-xl lg:text-2xl tracking-tight">
         Almanaque
       </span>

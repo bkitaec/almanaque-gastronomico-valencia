@@ -16,9 +16,10 @@ interface Restaurant {
 interface Props {
   restaurants: Restaurant[];
   categories: string[];
+  basePath: string;
 }
 
-export default function FilterChips({ restaurants, categories }: Props) {
+export default function FilterChips({ restaurants, categories, basePath }: Props) {
   const [active, setActive] = useState('Todos');
 
   const filtered = active === 'Todos'
@@ -54,7 +55,7 @@ export default function FilterChips({ restaurants, categories }: Props) {
           {filtered.map((r) => (
             <motion.a
               key={r.slug}
-              href={`/restaurante/${r.slug}`}
+              href={`${basePath}restaurante/${r.slug}`}
               layout
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}

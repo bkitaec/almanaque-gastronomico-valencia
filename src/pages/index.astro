@@ -8,6 +8,7 @@ import WaveDivider from '../components/decorative/WaveDivider.astro';
 import OrganicShape from '../components/decorative/OrganicShape.astro';
 import { formatPrice } from '../lib/utils';
 
+const base = import.meta.env.BASE_URL;
 const allRestaurants = await getCollection('restaurants');
 const featured = allRestaurants
   .filter((r) => r.data.featured)
@@ -33,7 +34,7 @@ const featured = allRestaurants
       </p>
       <div class="mt-10 opacity-0 animate-fade-in-up stagger-3">
         <a
-          href="/catalogo"
+          href={`${base}catalogo`}
           class="inline-block bg-primary hover:bg-primary-light text-white font-nav font-medium px-8 py-4 rounded-full transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_8px_25px_rgba(236,141,36,0.35)]"
         >
           Explorar Catálogo
@@ -108,7 +109,7 @@ const featured = allRestaurants
         {featured.map((restaurant, i) => (
           <AnimatedCard
             client:visible
-            href={`/restaurante/${restaurant.data.slug}`}
+            href={`${base}restaurante/${restaurant.data.slug}`}
             index={i}
             className="rounded-2xl overflow-hidden bg-white shadow-md hover:shadow-xl transition-shadow duration-300"
           >
@@ -152,7 +153,7 @@ const featured = allRestaurants
 
       <div class="text-center mt-12">
         <a
-          href="/catalogo"
+          href={`${base}catalogo`}
           class="inline-block bg-secondary hover:bg-secondary-light text-white font-nav font-medium px-8 py-4 rounded-full transition-all duration-300 hover:-translate-y-0.5"
         >
           Ver todos los restaurantes →

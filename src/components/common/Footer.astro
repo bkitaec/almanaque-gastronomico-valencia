@@ -1,5 +1,6 @@
 ---
 const currentYear = new Date().getFullYear();
+const base = import.meta.env.BASE_URL;
 
 const socialLinks = [
   { label: 'Instagram', href: 'https://www.instagram.com/almanaquegastro/', icon: 'instagram' },
@@ -13,7 +14,7 @@ const socialLinks = [
     <div class="grid grid-cols-1 md:grid-cols-3 gap-8 lg:gap-12">
       <!-- Brand -->
       <div>
-        <a href="/" class="inline-block mb-4">
+        <a href={base} class="inline-block mb-4">
           <span class="text-primary font-heading text-xl">Almanaque</span>
           <span class="text-white font-heading text-xl"> Gastronómico</span>
         </a>
@@ -27,9 +28,9 @@ const socialLinks = [
       <div>
         <h3 class="font-nav text-white text-sm uppercase tracking-wider mb-4">Navegación</h3>
         <ul class="space-y-2">
-          <li><a href="/" class="text-sm hover:text-primary transition-colors duration-200">Inicio</a></li>
-          <li><a href="/catalogo" class="text-sm hover:text-primary transition-colors duration-200">Catálogo</a></li>
-          <li><a href="/sobre-nosotros" class="text-sm hover:text-primary transition-colors duration-200">Sobre Nosotros</a></li>
+          <li><a href={base} class="text-sm hover:text-primary transition-colors duration-200">Inicio</a></li>
+          <li><a href={`${base}catalogo`} class="text-sm hover:text-primary transition-colors duration-200">Catálogo</a></li>
+          <li><a href={`${base}sobre-nosotros`} class="text-sm hover:text-primary transition-colors duration-200">Sobre Nosotros</a></li>
         </ul>
       </div>
 
