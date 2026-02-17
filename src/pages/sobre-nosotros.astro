@@ -1,0 +1,145 @@
+---
+import PageLayout from '../layouts/PageLayout.astro';
+import ScrollReveal from '../components/animated/ScrollReveal.tsx';
+import CounterAnimation from '../components/animated/CounterAnimation.tsx';
+import OrganicShape from '../components/decorative/OrganicShape.astro';
+import WaveDivider from '../components/decorative/WaveDivider.astro';
+---
+
+<PageLayout
+  title="Sobre Nosotros — Almanaque Gastronómico"
+  description="Conoce la historia del Almanaque Gastronómico, la referencia gastronómica de la Comunidad Valenciana desde 2008."
+>
+  <!-- Hero -->
+  <section class="pt-28 pb-20 bg-secondary relative overflow-hidden">
+    <OrganicShape variant={2} className="-top-20 -left-20 w-[500px] h-[500px]" color="var(--color-primary)" />
+    <OrganicShape variant={3} className="-bottom-20 -right-20 w-[400px] h-[400px]" color="var(--color-primary)" />
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+      <h1 class="text-white font-heading text-4xl lg:text-5xl mb-4">
+        Sobre el <span class="text-primary">Almanaque</span>
+      </h1>
+      <p class="text-white/60 text-lg max-w-xl">
+        La referencia gastronómica de la Comunidad Valenciana
+      </p>
+    </div>
+  </section>
+
+  <WaveDivider color="#f2ede7" />
+
+  <!-- History -->
+  <section class="py-20 lg:py-28 bg-warm">
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+      <ScrollReveal client:visible>
+        <h2 class="text-3xl lg:text-4xl text-secondary mb-8">
+          18 años de <span class="text-primary">historia</span>
+        </h2>
+        <div class="space-y-6 text-secondary/70 text-lg leading-relaxed">
+          <p>
+            El Almanaque Gastronómico de la Comunidad Valenciana nació en 2008 con una misión
+            clara: ofrecer un análisis independiente, riguroso y objetivo del panorama restaurador
+            valenciano. Desde entonces, se ha convertido en la publicación de referencia para
+            profesionales y amantes de la gastronomía en la región.
+          </p>
+          <p>
+            Cada dos años, nuestro equipo editorial publica un volumen de más de 500 páginas
+            con una cuidada maquetación y más de 1.600 imágenes que ilustran más de 300 reseñas
+            de restaurantes. La edición 2026, publicada por Libros De Seda, continúa esta
+            tradición de excelencia editorial.
+          </p>
+          <p>
+            Nuestro trabajo abarca mucho más que las críticas gastronómicas: incluimos catas
+            de vinos y aceites, reportajes sobre productos clave como el arroz, entrevistas
+            con los protagonistas de la escena culinaria y análisis que reflejan la actualidad
+            gastronómica valenciana.
+          </p>
+        </div>
+      </ScrollReveal>
+    </div>
+  </section>
+
+  <!-- Stats -->
+  <section class="py-16 bg-white">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="grid grid-cols-2 lg:grid-cols-4 gap-8">
+        <div class="text-center">
+          <CounterAnimation client:visible target={18} suffix="+" className="block text-5xl lg:text-6xl font-heading text-primary" />
+          <span class="block mt-3 text-sm text-secondary/50 font-nav">Años de publicación</span>
+        </div>
+        <div class="text-center">
+          <CounterAnimation client:visible target={9} className="block text-5xl lg:text-6xl font-heading text-primary" />
+          <span class="block mt-3 text-sm text-secondary/50 font-nav">Ediciones publicadas</span>
+        </div>
+        <div class="text-center">
+          <CounterAnimation client:visible target={300} suffix="+" className="block text-5xl lg:text-6xl font-heading text-primary" />
+          <span class="block mt-3 text-sm text-secondary/50 font-nav">Restaurantes evaluados</span>
+        </div>
+        <div class="text-center">
+          <CounterAnimation client:visible target={3} className="block text-5xl lg:text-6xl font-heading text-primary" />
+          <span class="block mt-3 text-sm text-secondary/50 font-nav">Provincias cubiertas</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <WaveDivider color="#f2ede7" />
+
+  <!-- Team -->
+  <section class="py-20 lg:py-28 bg-warm">
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+      <ScrollReveal client:visible>
+        <h2 class="text-3xl lg:text-4xl text-secondary mb-8">
+          Equipo <span class="text-primary">editorial</span>
+        </h2>
+        <p class="text-secondary/70 text-lg leading-relaxed mb-10">
+          El Almanaque Gastronómico cuenta con un equipo de críticos y expertos reconocidos
+          que aportan rigor, experiencia y pasión a cada edición.
+        </p>
+      </ScrollReveal>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {[
+          { name: 'Alfredo Argilés', role: 'Crítico gastronómico y experto en productos' },
+          { name: 'Lluís Ruiz Soler', role: 'Crítico gastronómico' },
+          { name: 'Santos Ruiz', role: 'Crítico gastronómico' },
+          { name: 'Domingo Casany & Lourdes Rubio', role: 'Críticos gastronómicos' },
+          { name: 'Manuel Peris', role: 'Elaiotécnico, experto en aceites' },
+        ].map((member, i) => (
+          <ScrollReveal client:visible delay={i * 0.1}>
+            <div class="bg-white rounded-2xl p-6 shadow-sm">
+              <h3 class="font-heading text-lg text-secondary">{member.name}</h3>
+              <p class="text-secondary/50 text-sm font-nav mt-1">{member.role}</p>
+            </div>
+          </ScrollReveal>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <section class="py-20 bg-secondary text-center">
+    <div class="max-w-2xl mx-auto px-4">
+      <h2 class="text-white font-heading text-3xl lg:text-4xl mb-4">
+        Descubre nuestra <span class="text-primary">selección</span>
+      </h2>
+      <p class="text-white/50 text-lg mb-8">
+        Explora los mejores restaurantes de la Comunidad Valenciana
+      </p>
+      <div class="flex flex-col sm:flex-row gap-4 justify-center">
+        <a
+          href="/catalogo"
+          class="inline-block bg-primary hover:bg-primary-light text-white font-nav font-medium px-8 py-4 rounded-full transition-all duration-300 hover:-translate-y-0.5"
+        >
+          Ver catálogo
+        </a>
+        <a
+          href="https://almanaquegastronomico.com"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="inline-block border border-white/20 hover:border-white/40 text-white font-nav font-medium px-8 py-4 rounded-full transition-all duration-300"
+        >
+          Visitar web principal →
+        </a>
+      </div>
+    </div>
+  </section>
+</PageLayout>

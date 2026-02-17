@@ -1,0 +1,108 @@
+@import "tailwindcss";
+@import "@fontsource/poppins/700.css";
+@import "@fontsource/heebo/400.css";
+@import "@fontsource/inter/500.css";
+
+/* ===== Design Tokens (Tailwind v4 CSS-first config) ===== */
+@theme {
+  --color-primary: #ec8d24;
+  --color-primary-light: #f4a94d;
+  --color-primary-dark: #c97520;
+  --color-primary-50: #fef7ed;
+  --color-primary-100: #fdecd4;
+  --color-primary-900: #7c4a13;
+
+  --color-secondary: #212934;
+  --color-secondary-light: #2d3748;
+  --color-secondary-dark: #1a1f28;
+  --color-secondary-50: #f0f1f3;
+
+  --color-warm: #f2ede7;
+  --color-warm-light: #f8f5f1;
+  --color-warm-dark: #e5ddd3;
+
+  --color-gold: #d4a843;
+
+  --font-heading: 'Poppins', sans-serif;
+  --font-body: 'Heebo', sans-serif;
+  --font-nav: 'Inter', sans-serif;
+}
+
+/* ===== Base Styles ===== */
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: var(--font-body);
+  color: var(--color-secondary);
+  background-color: #ffffff;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-heading);
+  font-weight: 700;
+}
+
+/* ===== Decorative Animations ===== */
+@keyframes float {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  33% { transform: translateY(-15px) rotate(2deg); }
+  66% { transform: translateY(5px) rotate(-1deg); }
+}
+
+@keyframes float-delayed {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  33% { transform: translateY(10px) rotate(-1.5deg); }
+  66% { transform: translateY(-12px) rotate(1deg); }
+}
+
+@keyframes fade-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes bounce-down {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(8px); }
+}
+
+.animate-float {
+  animation: float 8s ease-in-out infinite;
+}
+
+.animate-float-delayed {
+  animation: float-delayed 10s ease-in-out 2s infinite;
+}
+
+.animate-fade-in-up {
+  animation: fade-in-up 0.8s ease-out forwards;
+}
+
+.animate-bounce-down {
+  animation: bounce-down 2s ease-in-out infinite;
+}
+
+/* ===== Stagger Delays ===== */
+.stagger-1 { animation-delay: 0.1s; }
+.stagger-2 { animation-delay: 0.2s; }
+.stagger-3 { animation-delay: 0.3s; }
+.stagger-4 { animation-delay: 0.4s; }
+.stagger-5 { animation-delay: 0.5s; }
+
+/* ===== Reduced Motion ===== */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

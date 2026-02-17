@@ -1,0 +1,152 @@
+---
+interface Props {
+  transparent?: boolean;
+}
+
+const { transparent = false } = Astro.props;
+const currentPath = Astro.url.pathname;
+
+const navLinks = [
+  { href: '/', label: 'Inicio' },
+  { href: '/catalogo', label: 'Catálogo' },
+  { href: '/sobre-nosotros', label: 'Sobre Nosotros' },
+];
+---
+
+<header
+  id="main-header"
+  class:list={[
+    'fixed top-0 left-0 right-0 z-50 transition-all duration-300',
+    transparent ? 'bg-transparent' : 'bg-secondary/95 backdrop-blur-sm',
+  ]}
+>
+  <nav class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between h-16 lg:h-20">
+    <!-- Logo -->
+    <a href="/" class="flex items-center gap-2 group" transition:name="logo">
+      <span class="text-primary font-heading text-xl lg:text-2xl tracking-tight">
+        Almanaque
+      </span>
+      <span class="text-white font-heading text-xl lg:text-2xl tracking-tight">
+        Gastronómico
+      </span>
+    </a>
+
+    <!-- Desktop Navigation -->
+    <div class="hidden md:flex items-center gap-8">
+      {navLinks.map((link) => (
+        <a
+          href={link.href}
+          class:list={[
+            'relative font-nav text-sm tracking-wide transition-colors duration-200',
+            currentPath === link.href
+              ? 'text-primary'
+              : 'text-white/80 hover:text-white',
+          ]}
+        >
+          {link.label}
+          <span
+            class:list={[
+              'absolute -bottom-1 left-0 h-0.5 bg-primary transition-all duration-300',
+              currentPath === link.href ? 'w-full' : 'w-0 group-hover:w-full',
+            ]}
+          />
+        </a>
+      ))}
+    </div>
+
+    <!-- Mobile Menu Button -->
+    <button
+      id="mobile-menu-btn"
+      class="md:hidden flex flex-col gap-1.5 p-2 -mr-2"
+      aria-label="Abrir menú"
+      aria-expanded="false"
+    >
+      <span class="block w-6 h-0.5 bg-white transition-transform duration-300 origin-center" id="burger-top"></span>
+      <span class="block w-6 h-0.5 bg-white transition-opacity duration-300" id="burger-mid"></span>
+      <span class="block w-6 h-0.5 bg-white transition-transform duration-300 origin-center" id="burger-bot"></span>
+    </button>
+  </nav>
+
+  <!-- Mobile Menu -->
+  <div
+    id="mobile-menu"
+    class="md:hidden fixed inset-0 top-16 bg-secondary/98 backdrop-blur-md -translate-x-full transition-transform duration-300 ease-out"
+  >
+    <div class="flex flex-col items-center justify-center gap-8 pt-20">
+      {navLinks.map((link, i) => (
+        <a
+          href={link.href}
+          class:list={[
+            'font-heading text-2xl transition-colors duration-200',
+            currentPath === link.href ? 'text-primary' : 'text-white/80 hover:text-white',
+          ]}
+          style={`transition-delay: ${i * 75}ms`}
+        >
+          {link.label}
+        </a>
+      ))}
+    </div>
+  </div>
+</header>
+
+<script>
+  function initHeader() {
+    const header = document.getElementById('main-header');
+    const btn = document.getElementById('mobile-menu-btn');
+    const menu = document.getElementById('mobile-menu');
+    const burgerTop = document.getElementById('burger-top');
+    const burgerMid = document.getElementById('burger-mid');
+    const burgerBot = document.getElementById('burger-bot');
+    let isOpen = false;
+
+    // Scroll effect
+    function onScroll() {
+      if (!header) return;
+      if (window.scrollY > 50) {
+        header.classList.add('bg-secondary/95', 'backdrop-blur-sm', 'shadow-lg');
+        header.classList.remove('bg-transparent');
+      } else if (header.dataset.transparent === 'true') {
+        header.classList.remove('bg-secondary/95', 'backdrop-blur-sm', 'shadow-lg');
+        header.classList.add('bg-transparent');
+      }
+    }
+
+    // Set transparent data attribute
+    if (header?.classList.contains('bg-transparent')) {
+      header.dataset.transparent = 'true';
+    }
+
+    window.addEventListener('scroll', onScroll, { passive: true });
+    onScroll();
+
+    // Mobile menu toggle
+    btn?.addEventListener('click', () => {
+      isOpen = !isOpen;
+      if (isOpen) {
+        menu?.classList.remove('-translate-x-full');
+        burgerTop?.style.setProperty('transform', 'rotate(45deg) translateY(4px)');
+        burgerMid?.style.setProperty('opacity', '0');
+        burgerBot?.style.setProperty('transform', 'rotate(-45deg) translateY(-4px)');
+        btn.setAttribute('aria-expanded', 'true');
+      } else {
+        menu?.classList.add('-translate-x-full');
+        burgerTop?.style.setProperty('transform', 'none');
+        burgerMid?.style.setProperty('opacity', '1');
+        burgerBot?.style.setProperty('transform', 'none');
+        btn.setAttribute('aria-expanded', 'false');
+      }
+    });
+
+    // Close menu on link click
+    menu?.querySelectorAll('a').forEach((link) => {
+      link.addEventListener('click', () => {
+        menu.classList.add('-translate-x-full');
+        isOpen = false;
+      });
+    });
+  }
+
+  // Run on initial load and after view transitions
+  initHeader();
+  document.addEventListener('astro:after-swap', initHeader);
+</script>

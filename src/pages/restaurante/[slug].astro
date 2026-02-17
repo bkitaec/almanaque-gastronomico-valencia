@@ -1,0 +1,269 @@
+---
+import { getCollection, render } from 'astro:content';
+import PageLayout from '../../layouts/PageLayout.astro';
+import ScrollReveal from '../../components/animated/ScrollReveal.tsx';
+import { formatPrice, formatPriceRange, getRatingPercentage } from '../../lib/utils';
+
+export async function getStaticPaths() {
+  const restaurants = await getCollection('restaurants');
+  return restaurants.map((restaurant) => ({
+    params: { slug: restaurant.data.slug },
+    props: { restaurant },
+  }));
+}
+
+const { restaurant } = Astro.props;
+const { data } = restaurant;
+
+// Get all restaurants for prev/next navigation
+const allRestaurants = await getCollection('restaurants');
+const sorted = allRestaurants.sort((a, b) => a.data.order - b.data.order);
+const currentIndex = sorted.findIndex((r) => r.data.slug === data.slug);
+const prevRestaurant = sorted[(currentIndex - 1 + sorted.length) % sorted.length];
+const nextRestaurant = sorted[(currentIndex + 1) % sorted.length];
+
+const ratingPct = getRatingPercentage(data.rating, data.ratingScale);
+
+// Render markdown body (Astro 5 API)
+const { Content } = await render(restaurant);
+---
+
+<PageLayout
+  title={`${data.name} — Almanaque Gastronómico`}
+  description={`Crítica del restaurante ${data.name} en Valencia. ${data.category}. Chef: ${data.chef.name}.`}
+  transparentHeader
+>
+  <!-- Hero Image -->
+  <section class="relative h-[60vh] min-h-[400px] overflow-hidden">
+    <img
+      src={data.images.hero}
+      alt={data.name}
+      class="w-full h-full object-cover"
+      transition:name={`restaurant-${data.slug}`}
+    />
+    <div class="absolute inset-0 bg-gradient-to-t from-secondary via-secondary/40 to-transparent"></div>
+    <div class="absolute bottom-0 left-0 right-0 p-6 lg:p-12">
+      <div class="max-w-7xl mx-auto">
+        <span class="inline-block bg-primary text-white text-sm font-nav px-4 py-1.5 rounded-full mb-4">
+          {data.category}
+          {data.subcategory && ` · ${data.subcategory}`}
+        </span>
+        <h1 class="text-white font-heading text-4xl lg:text-6xl">{data.name}</h1>
+        {data.neighborhood && (
+          <p class="text-white/60 text-lg mt-2 font-nav">{data.neighborhood}, Valencia</p>
+        )}
+      </div>
+    </div>
+  </section>
+
+  <!-- Content Area -->
+  <section class="py-12 lg:py-20 bg-white">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-12 lg:gap-16">
+
+        <!-- Main Content -->
+        <div class="lg:col-span-2">
+          <!-- Rating -->
+          <ScrollReveal client:visible>
+            <div class="flex items-center gap-6 mb-10 p-6 bg-warm rounded-2xl">
+              <div class="relative w-20 h-20 shrink-0">
+                <svg class="w-20 h-20 -rotate-90" viewBox="0 0 36 36">
+                  <path
+                    class="text-warm-dark"
+                    d="M18 2.0845a 15.9155 15.9155 0 0 1 0 31.831 15.9155 15.9155 0 0 1 0 -31.831"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="3"
+                  />
+                  <path
+                    class="text-gold"
+                    d="M18 2.0845a 15.9155 15.9155 0 0 1 0 31.831 15.9155 15.9155 0 0 1 0 -31.831"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="3"
+                    stroke-dasharray={`${ratingPct}, 100`}
+                    stroke-linecap="round"
+                  />
+                </svg>
+                <span class="absolute inset-0 flex items-center justify-center font-heading text-xl text-secondary">
+                  {data.rating}
+                </span>
+              </div>
+              <div>
+                <span class="text-secondary font-heading text-lg">Puntuación</span>
+                <span class="block text-secondary/50 text-sm font-nav">sobre {data.ratingScale}</span>
+              </div>
+            </div>
+          </ScrollReveal>
+
+          <!-- Review Content -->
+          <ScrollReveal client:visible delay={0.1}>
+            <div class="prose prose-lg max-w-none text-secondary/80 leading-relaxed">
+              <Content />
+            </div>
+          </ScrollReveal>
+
+          <!-- Gallery -->
+          {data.images.gallery && data.images.gallery.length > 0 && (
+            <ScrollReveal client:visible delay={0.2}>
+              <h2 class="text-2xl text-secondary mt-16 mb-6">Galería</h2>
+              <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
+                {data.images.gallery.map((img: string, i: number) => (
+                  <div class="rounded-xl overflow-hidden aspect-[4/3]">
+                    <img
+                      src={img}
+                      alt={`${data.name} - imagen ${i + 1}`}
+                      class="w-full h-full object-cover hover:scale-105 transition-transform duration-500"
+                      loading="lazy"
+                    />
+                  </div>
+                ))}
+              </div>
+            </ScrollReveal>
+          )}
+        </div>
+
+        <!-- Sidebar -->
+        <aside class="lg:col-span-1">
+          <div class="lg:sticky lg:top-24 space-y-6">
+            <!-- Info Card -->
+            <div class="bg-warm rounded-2xl p-6 space-y-4">
+              <h3 class="font-heading text-lg text-secondary border-b border-secondary/10 pb-3">Información</h3>
+
+              {/* Chef */}
+              <div>
+                <span class="text-secondary/40 text-xs font-nav uppercase tracking-wider">Chef</span>
+                <p class="text-secondary font-medium">{data.chef.name}</p>
+                {data.chef.role && <p class="text-secondary/50 text-sm">{data.chef.role}</p>}
+              </div>
+
+              {/* Front of House */}
+              {data.frontOfHouse && (
+                <div>
+                  <span class="text-secondary/40 text-xs font-nav uppercase tracking-wider">Sala</span>
+                  <p class="text-secondary font-medium">{data.frontOfHouse}</p>
+                </div>
+              )}
+
+              {/* Cuisine */}
+              <div>
+                <span class="text-secondary/40 text-xs font-nav uppercase tracking-wider">Cocina</span>
+                <div class="flex flex-wrap gap-2 mt-1">
+                  {data.cuisine.map((c: string) => (
+                    <span class="bg-white text-secondary/70 text-xs px-3 py-1 rounded-full">{c}</span>
+                  ))}
+                </div>
+              </div>
+
+              {/* Prices */}
+              <div>
+                <span class="text-secondary/40 text-xs font-nav uppercase tracking-wider">Precio medio</span>
+                <p class="text-secondary font-heading text-lg">~{formatPrice(data.priceRange.cartaAvg)}</p>
+                {data.priceRange.menuDegustacion && (
+                  <p class="text-secondary/50 text-sm">
+                    Menú: {formatPriceRange(data.priceRange.menuDegustacion.min, data.priceRange.menuDegustacion.max)}
+                  </p>
+                )}
+              </div>
+
+              {/* Year */}
+              {data.yearEstablished && (
+                <div>
+                  <span class="text-secondary/40 text-xs font-nav uppercase tracking-wider">Desde</span>
+                  <p class="text-secondary font-medium">{data.yearEstablished}</p>
+                </div>
+              )}
+            </div>
+
+            <!-- Contact Card -->
+            <div class="bg-warm rounded-2xl p-6 space-y-4">
+              <h3 class="font-heading text-lg text-secondary border-b border-secondary/10 pb-3">Contacto</h3>
+
+              <div>
+                <span class="text-secondary/40 text-xs font-nav uppercase tracking-wider">Dirección</span>
+                <p class="text-secondary text-sm">{data.address}</p>
+              </div>
+
+              <div>
+                <span class="text-secondary/40 text-xs font-nav uppercase tracking-wider">Teléfono</span>
+                <a href={`tel:${data.phone}`} class="block text-primary hover:text-primary-dark transition-colors text-sm">
+                  {data.phone}
+                </a>
+              </div>
+
+              {data.website && (
+                <div>
+                  <span class="text-secondary/40 text-xs font-nav uppercase tracking-wider">Web</span>
+                  <a href={data.website} target="_blank" rel="noopener noreferrer" class="block text-primary hover:text-primary-dark transition-colors text-sm truncate">
+                    {data.website.replace(/^https?:\/\//, '')}
+                  </a>
+                </div>
+              )}
+
+              {data.instagram && (
+                <div>
+                  <span class="text-secondary/40 text-xs font-nav uppercase tracking-wider">Instagram</span>
+                  <a
+                    href={`https://instagram.com/${data.instagram.replace('@', '')}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="block text-primary hover:text-primary-dark transition-colors text-sm"
+                  >
+                    {data.instagram}
+                  </a>
+                </div>
+              )}
+            </div>
+
+            {/* Highlights */}
+            {data.highlights && data.highlights.length > 0 && (
+              <div class="bg-warm rounded-2xl p-6">
+                <h3 class="font-heading text-lg text-secondary border-b border-secondary/10 pb-3 mb-4">Destacados</h3>
+                <ul class="space-y-2">
+                  {data.highlights.map((h: string) => (
+                    <li class="flex items-start gap-2 text-sm text-secondary/70">
+                      <span class="text-primary mt-0.5">•</span>
+                      {h}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+          </div>
+        </aside>
+      </div>
+    </div>
+  </section>
+
+  <!-- Restaurant Navigation -->
+  <section class="py-12 bg-warm-light border-t border-secondary/5">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <a
+          href={`/restaurante/${prevRestaurant.data.slug}`}
+          class="group flex items-center gap-4 p-6 bg-white rounded-2xl hover:shadow-md transition-all duration-300"
+        >
+          <svg class="w-5 h-5 text-secondary/40 group-hover:text-primary transition-colors shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+          </svg>
+          <div>
+            <span class="text-secondary/40 text-xs font-nav uppercase tracking-wider">Anterior</span>
+            <p class="text-secondary font-heading group-hover:text-primary transition-colors">{prevRestaurant.data.name}</p>
+          </div>
+        </a>
+        <a
+          href={`/restaurante/${nextRestaurant.data.slug}`}
+          class="group flex items-center justify-end gap-4 p-6 bg-white rounded-2xl hover:shadow-md transition-all duration-300 text-right"
+        >
+          <div>
+            <span class="text-secondary/40 text-xs font-nav uppercase tracking-wider">Siguiente</span>
+            <p class="text-secondary font-heading group-hover:text-primary transition-colors">{nextRestaurant.data.name}</p>
+          </div>
+          <svg class="w-5 h-5 text-secondary/40 group-hover:text-primary transition-colors shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+          </svg>
+        </a>
+      </div>
+    </div>
+  </section>
+</PageLayout>

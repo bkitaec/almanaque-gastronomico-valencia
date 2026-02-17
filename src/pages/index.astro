@@ -1,0 +1,163 @@
+---
+import { getCollection } from 'astro:content';
+import PageLayout from '../layouts/PageLayout.astro';
+import CounterAnimation from '../components/animated/CounterAnimation.tsx';
+import AnimatedCard from '../components/animated/AnimatedCard.tsx';
+import ScrollReveal from '../components/animated/ScrollReveal.tsx';
+import WaveDivider from '../components/decorative/WaveDivider.astro';
+import OrganicShape from '../components/decorative/OrganicShape.astro';
+import { formatPrice } from '../lib/utils';
+
+const allRestaurants = await getCollection('restaurants');
+const featured = allRestaurants
+  .filter((r) => r.data.featured)
+  .sort((a, b) => a.data.order - b.data.order)
+  .slice(0, 3);
+---
+
+<PageLayout title="Almanaque Gastronómico — La referencia gastronómica de Valencia" transparentHeader>
+  <!-- Hero Section -->
+  <section class="min-h-screen flex items-center justify-center bg-secondary relative overflow-hidden">
+    <div class="absolute inset-0 overflow-hidden pointer-events-none">
+      <OrganicShape variant={1} className="top-10 -left-20 w-[500px] h-[500px] animate-float" color="var(--color-primary)" />
+      <OrganicShape variant={2} className="bottom-10 -right-20 w-[600px] h-[600px] animate-float-delayed" color="var(--color-primary)" />
+      <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 rounded-full bg-primary/5 blur-3xl"></div>
+    </div>
+
+    <div class="relative z-10 text-center px-4 max-w-4xl mx-auto">
+      <h1 class="text-white opacity-0 animate-fade-in-up" style="font-size: clamp(2.5rem, 5vw, 4.5rem); line-height: 1.1;">
+        <span class="text-primary">Almanaque</span> Gastronómico
+      </h1>
+      <p class="text-white/70 mt-6 text-lg md:text-xl max-w-2xl mx-auto opacity-0 animate-fade-in-up stagger-2">
+        18 años descubriendo la gastronomía valenciana
+      </p>
+      <div class="mt-10 opacity-0 animate-fade-in-up stagger-3">
+        <a
+          href="/catalogo"
+          class="inline-block bg-primary hover:bg-primary-light text-white font-nav font-medium px-8 py-4 rounded-full transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_8px_25px_rgba(236,141,36,0.35)]"
+        >
+          Explorar Catálogo
+        </a>
+      </div>
+
+      <div class="absolute bottom-8 left-1/2 -translate-x-1/2 animate-bounce-down">
+        <svg class="w-6 h-6 text-white/40" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"></path>
+        </svg>
+      </div>
+    </div>
+  </section>
+
+  <WaveDivider color="#f2ede7" />
+
+  <!-- Brand Intro + Stats -->
+  <section class="py-20 lg:py-28 bg-warm relative overflow-hidden">
+    <OrganicShape variant={3} className="-top-20 -right-32 w-[400px] h-[400px] opacity-50" color="var(--color-primary)" />
+
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20 items-center">
+        <ScrollReveal client:visible direction="left">
+          <h2 class="text-3xl lg:text-4xl text-secondary mb-6" style="line-height: 1.2;">
+            La referencia gastronómica de la <span class="text-primary">Comunidad Valenciana</span>
+          </h2>
+          <p class="text-secondary/70 text-lg leading-relaxed">
+            Desde 2008, el Almanaque Gastronómico analiza de forma independiente y objetiva
+            el panorama restaurador valenciano. Cada edición es un recorrido exhaustivo por
+            los mejores establecimientos, catas de vinos y aceites, entrevistas y reportajes
+            que reflejan la actualidad culinaria de nuestra tierra.
+          </p>
+        </ScrollReveal>
+
+        <div class="grid grid-cols-2 gap-6">
+          <div class="bg-white rounded-2xl p-6 shadow-sm text-center">
+            <CounterAnimation client:visible target={18} suffix="+" className="block text-4xl lg:text-5xl font-heading text-primary" />
+            <span class="block mt-2 text-sm text-secondary/60 font-nav">Años de historia</span>
+          </div>
+          <div class="bg-white rounded-2xl p-6 shadow-sm text-center">
+            <CounterAnimation client:visible target={300} suffix="+" className="block text-4xl lg:text-5xl font-heading text-primary" />
+            <span class="block mt-2 text-sm text-secondary/60 font-nav">Restaurantes</span>
+          </div>
+          <div class="bg-white rounded-2xl p-6 shadow-sm text-center">
+            <CounterAnimation client:visible target={500} suffix="+" className="block text-4xl lg:text-5xl font-heading text-primary" />
+            <span class="block mt-2 text-sm text-secondary/60 font-nav">Páginas por edición</span>
+          </div>
+          <div class="bg-white rounded-2xl p-6 shadow-sm text-center">
+            <CounterAnimation client:visible target={1600} suffix="+" className="block text-4xl lg:text-5xl font-heading text-primary" />
+            <span class="block mt-2 text-sm text-secondary/60 font-nav">Imágenes</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <WaveDivider color="#ffffff" />
+
+  <!-- Featured Restaurants -->
+  <section class="py-20 lg:py-28 bg-white">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <ScrollReveal client:visible className="text-center mb-16">
+        <h2 class="text-3xl lg:text-4xl text-secondary mb-4">
+          Selección <span class="text-primary">Destacada</span>
+        </h2>
+        <p class="text-secondary/60 text-lg max-w-2xl mx-auto">
+          Descubre nuestra selección de los restaurantes más destacados de Valencia
+        </p>
+      </ScrollReveal>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        {featured.map((restaurant, i) => (
+          <AnimatedCard
+            client:visible
+            href={`/restaurante/${restaurant.data.slug}`}
+            index={i}
+            className="rounded-2xl overflow-hidden bg-white shadow-md hover:shadow-xl transition-shadow duration-300"
+          >
+            <div class="relative h-64 overflow-hidden">
+              <img
+                src={restaurant.data.images.hero}
+                alt={restaurant.data.name}
+                class="w-full h-full object-cover transition-transform duration-500 hover:scale-110"
+                loading="lazy"
+                transition:name={`restaurant-${restaurant.data.slug}`}
+              />
+              <div class="absolute inset-0 bg-gradient-to-t from-secondary/80 via-secondary/20 to-transparent"></div>
+              <div class="absolute bottom-4 left-4 right-4">
+                <span class="inline-block bg-primary text-white text-xs font-nav px-3 py-1 rounded-full mb-2">
+                  {restaurant.data.category}
+                </span>
+                <h3 class="text-white font-heading text-xl">{restaurant.data.name}</h3>
+              </div>
+            </div>
+            <div class="p-5">
+              <div class="flex items-center justify-between">
+                <span class="text-secondary/60 text-sm font-nav">
+                  {restaurant.data.chef.name}
+                </span>
+                <span class="text-primary font-heading text-lg">
+                  {restaurant.data.rating}/{restaurant.data.ratingScale}
+                </span>
+              </div>
+              <div class="flex items-center justify-between mt-2">
+                <span class="text-secondary/40 text-sm">
+                  {restaurant.data.neighborhood}
+                </span>
+                <span class="text-secondary/60 text-sm font-nav">
+                  ~{formatPrice(restaurant.data.priceRange.cartaAvg)}
+                </span>
+              </div>
+            </div>
+          </AnimatedCard>
+        ))}
+      </div>
+
+      <div class="text-center mt-12">
+        <a
+          href="/catalogo"
+          class="inline-block bg-secondary hover:bg-secondary-light text-white font-nav font-medium px-8 py-4 rounded-full transition-all duration-300 hover:-translate-y-0.5"
+        >
+          Ver todos los restaurantes →
+        </a>
+      </div>
+    </div>
+  </section>
+</PageLayout>

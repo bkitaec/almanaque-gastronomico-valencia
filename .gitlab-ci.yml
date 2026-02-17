@@ -1,0 +1,16 @@
+image: node:22-alpine
+
+pages:
+  stage: deploy
+  before_script:
+    - corepack enable
+    - corepack prepare pnpm@latest --activate
+    - pnpm install --frozen-lockfile
+  script:
+    - pnpm build
+    - mv dist public
+  artifacts:
+    paths:
+      - public
+  only:
+    - main
