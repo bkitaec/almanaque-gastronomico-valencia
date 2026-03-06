@@ -2,18 +2,28 @@
 import { getCollection } from 'astro:content';
 import PageLayout from '../layouts/PageLayout.astro';
 import CounterAnimation from '../components/animated/CounterAnimation.tsx';
-import AnimatedCard from '../components/animated/AnimatedCard.tsx';
 import ScrollReveal from '../components/animated/ScrollReveal.tsx';
+import FeaturedRestaurants from '../components/home/FeaturedRestaurants.tsx';
 import WaveDivider from '../components/decorative/WaveDivider.astro';
 import OrganicShape from '../components/decorative/OrganicShape.astro';
-import { formatPrice } from '../lib/utils';
 
 const base = import.meta.env.BASE_URL;
 const allRestaurants = await getCollection('restaurants');
 const featured = allRestaurants
   .filter((r) => r.data.featured)
   .sort((a, b) => a.data.order - b.data.order)
-  .slice(0, 3);
+  .slice(0, 5);
+
+const featuredData = featured.map((r) => ({
+  slug: r.data.slug,
+  name: r.data.name,
+  heroImage: r.data.images.hero,
+  rating: r.data.rating,
+  ratingScale: r.data.ratingScale,
+  cuisine: r.data.cuisine,
+  category: r.data.category,
+  basePath: base,
+}));
 ---
 
 <PageLayout title="Almanaque Gastronómico — La referencia gastronómica de Valencia" transparentHeader>
@@ -96,68 +106,21 @@ const featured = allRestaurants
   <!-- Featured Restaurants -->
   <section class="py-20 lg:py-28 bg-white">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-      <ScrollReveal client:visible className="text-center mb-16">
-        <h2 class="text-3xl lg:text-4xl text-secondary mb-4">
-          Selección <span class="text-primary">Destacada</span>
-        </h2>
-        <p class="text-secondary/60 text-lg max-w-2xl mx-auto">
-          Descubre nuestra selección de los restaurantes más destacados de Valencia
-        </p>
-      </ScrollReveal>
+      <div class="bg-primary rounded-3xl px-6 py-10 md:px-10 md:py-14 overflow-hidden">
+        <ScrollReveal client:visible>
+          <h2 class="text-white font-heading text-2xl md:text-3xl mb-2">
+            Restaurantes destacados
+          </h2>
+          <p class="text-white/80 text-sm md:text-base mb-8 max-w-lg" style="font-family: 'Heebo', sans-serif;">
+            Nuestras valoraciones se basan en evaluaciones genuinas e independientes — libres de influencia comercial
+          </p>
+        </ScrollReveal>
 
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-        {featured.map((restaurant, i) => (
-          <AnimatedCard
-            client:visible
-            href={`${base}restaurante/${restaurant.data.slug}`}
-            index={i}
-            className="rounded-2xl overflow-hidden bg-white shadow-md hover:shadow-xl transition-shadow duration-300"
-          >
-            <div class="relative h-64 overflow-hidden">
-              <img
-                src={restaurant.data.images.hero}
-                alt={restaurant.data.name}
-                class="w-full h-full object-cover transition-transform duration-500 hover:scale-110"
-                loading="lazy"
-                transition:name={`restaurant-${restaurant.data.slug}`}
-              />
-              <div class="absolute inset-0 bg-gradient-to-t from-secondary/80 via-secondary/20 to-transparent"></div>
-              <div class="absolute bottom-4 left-4 right-4">
-                <span class="inline-block bg-primary text-white text-xs font-nav px-3 py-1 rounded-full mb-2">
-                  {restaurant.data.category}
-                </span>
-                <h3 class="text-white font-heading text-xl">{restaurant.data.name}</h3>
-              </div>
-            </div>
-            <div class="p-5">
-              <div class="flex items-center justify-between">
-                <span class="text-secondary/60 text-sm font-nav">
-                  {restaurant.data.chef.name}
-                </span>
-                <span class="text-primary font-heading text-lg">
-                  {restaurant.data.rating}/{restaurant.data.ratingScale}
-                </span>
-              </div>
-              <div class="flex items-center justify-between mt-2">
-                <span class="text-secondary/40 text-sm">
-                  {restaurant.data.neighborhood}
-                </span>
-                <span class="text-secondary/60 text-sm font-nav">
-                  ~{formatPrice(restaurant.data.priceRange.cartaAvg)}
-                </span>
-              </div>
-            </div>
-          </AnimatedCard>
-        ))}
-      </div>
-
-      <div class="text-center mt-12">
-        <a
-          href={`${base}catalogo`}
-          class="inline-block bg-secondary hover:bg-secondary-light text-white font-nav font-medium px-8 py-4 rounded-full transition-all duration-300 hover:-translate-y-0.5"
-        >
-          Ver todos los restaurantes →
-        </a>
+        <FeaturedRestaurants
+          client:visible
+          restaurants={featuredData}
+          basePath={base}
+        />
       </div>
     </div>
   </section>

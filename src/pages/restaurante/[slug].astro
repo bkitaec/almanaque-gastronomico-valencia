@@ -2,7 +2,11 @@
 import { getCollection, render } from 'astro:content';
 import PageLayout from '../../layouts/PageLayout.astro';
 import ScrollReveal from '../../components/animated/ScrollReveal.tsx';
-import { formatPrice, formatPriceRange, getRatingPercentage } from '../../lib/utils';
+import ImageSlider from '../../components/detail/ImageSlider.tsx';
+import SocialShare from '../../components/detail/SocialShare.tsx';
+import LaurelRating from '../../components/ui/LaurelRating.tsx';
+import CategoryBadges from '../../components/ui/CategoryBadges.tsx';
+import { formatPrice, formatPriceRange, getCategoryBadges } from '../../lib/utils';
 
 export async function getStaticPaths() {
   const restaurants = await getCollection('restaurants');
@@ -15,7 +19,6 @@ export async function getStaticPaths() {
 const { restaurant } = Astro.props;
 const { data } = restaurant;
 
-// Get all restaurants for prev/next navigation
 const allRestaurants = await getCollection('restaurants');
 const sorted = allRestaurants.sort((a, b) => a.data.order - b.data.order);
 const currentIndex = sorted.findIndex((r) => r.data.slug === data.slug);
@@ -23,215 +26,208 @@ const prevRestaurant = sorted[(currentIndex - 1 + sorted.length) % sorted.length
 const nextRestaurant = sorted[(currentIndex + 1) % sorted.length];
 
 const base = import.meta.env.BASE_URL;
-const ratingPct = getRatingPercentage(data.rating, data.ratingScale);
+const badges = getCategoryBadges(data.category);
 
-// Render markdown body (Astro 5 API)
-const { Content } = await render(restaurant);
+// Split markdown body into paragraphs for interspersed layout
+const rawBody = restaurant.body || '';
+const paragraphs = rawBody.split(/\n\n+/).filter((p: string) => p.trim().length > 0);
+
+// Split into sections: intro (first 2), highlighted (3rd), closing (rest)
+const introParagraphs = paragraphs.slice(0, 2);
+const highlightParagraph = paragraphs[2] || '';
+const closingParagraphs = paragraphs.slice(3);
+
+// Gallery images
+const gallery = data.images.gallery || [];
+const sliderImages = gallery.slice(0, 3);
+const bannerImage = gallery.length > 1 ? gallery[gallery.length - 1] : null;
 ---
 
 <PageLayout
   title={`${data.name} — Almanaque Gastronómico`}
   description={`Crítica del restaurante ${data.name} en Valencia. ${data.category}. Chef: ${data.chef.name}.`}
-  transparentHeader
 >
-  <!-- Hero Image -->
-  <section class="relative h-[60vh] min-h-[400px] overflow-hidden">
-    <img
-      src={data.images.hero}
-      alt={data.name}
-      class="w-full h-full object-cover"
-      transition:name={`restaurant-${data.slug}`}
-    />
-    <div class="absolute inset-0 bg-gradient-to-t from-secondary via-secondary/40 to-transparent"></div>
-    <div class="absolute bottom-0 left-0 right-0 p-6 lg:p-12">
-      <div class="max-w-7xl mx-auto">
-        <span class="inline-block bg-primary text-white text-sm font-nav px-4 py-1.5 rounded-full mb-4">
-          {data.category}
-          {data.subcategory && ` · ${data.subcategory}`}
-        </span>
-        <h1 class="text-white font-heading text-4xl lg:text-6xl">{data.name}</h1>
-        {data.neighborhood && (
-          <p class="text-white/60 text-lg mt-2 font-nav">{data.neighborhood}, Valencia</p>
-        )}
+  <!-- Hero Section: Two-column -->
+  <section class="pt-28 pb-8 lg:pt-32 lg:pb-12 bg-white">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="grid grid-cols-1 lg:grid-cols-5 gap-8 lg:gap-10 items-start">
+        <!-- Left: Hero Image (60%) -->
+        <div class="lg:col-span-3">
+          <div class="rounded-2xl overflow-hidden">
+            <img
+              src={data.images.hero}
+              alt={data.name}
+              class="w-full h-auto object-cover"
+              style="aspect-ratio: 4/3;"
+              transition:name={`restaurant-${data.slug}`}
+            />
+          </div>
+        </div>
+
+        <!-- Right: Info Block (40%) -->
+        <div class="lg:col-span-2 flex flex-col gap-4">
+          <LaurelRating client:load rating={data.rating} ratingScale={data.ratingScale} size="lg" />
+
+          <h1 class="font-heading text-3xl lg:text-4xl text-secondary leading-tight">{data.name}</h1>
+
+          <CategoryBadges client:load badges={badges} size="md" />
+
+          <!-- Location -->
+          <div class="flex items-start gap-2 text-secondary/60">
+            <svg class="w-4 h-4 mt-0.5 shrink-0 text-primary" fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd" />
+            </svg>
+            <div>
+              {data.neighborhood && <span class="font-medium text-secondary">{data.neighborhood}</span>}
+              <p class="text-sm">{data.address}</p>
+            </div>
+          </div>
+
+          <!-- Quick Info Card -->
+          <div class="bg-warm rounded-xl p-5 space-y-3 text-sm">
+            <div class="flex items-center justify-between">
+              <span class="text-secondary/50 font-nav uppercase tracking-wider text-xs">Chef</span>
+              <span class="text-secondary font-medium">{data.chef.name}</span>
+            </div>
+            {data.frontOfHouse && (
+              <div class="flex items-center justify-between">
+                <span class="text-secondary/50 font-nav uppercase tracking-wider text-xs">Sala</span>
+                <span class="text-secondary font-medium">{data.frontOfHouse}</span>
+              </div>
+            )}
+            <div class="flex items-center justify-between">
+              <span class="text-secondary/50 font-nav uppercase tracking-wider text-xs">Precio medio</span>
+              <span class="text-secondary font-heading">~{formatPrice(data.priceRange.cartaAvg)}</span>
+            </div>
+            {data.priceRange.menuDegustacion && (
+              <div class="flex items-center justify-between">
+                <span class="text-secondary/50 font-nav uppercase tracking-wider text-xs">Menú degustación</span>
+                <span class="text-secondary">{formatPriceRange(data.priceRange.menuDegustacion.min, data.priceRange.menuDegustacion.max)}</span>
+              </div>
+            )}
+            <div class="flex flex-wrap gap-1.5 pt-1">
+              {data.cuisine.map((c: string) => (
+                <span class="bg-white text-secondary/70 text-xs px-3 py-1 rounded-full">{c}</span>
+              ))}
+            </div>
+          </div>
+
+          <!-- Contact Links -->
+          <div class="flex flex-wrap gap-3 text-sm">
+            {data.phone && (
+              <a href={`tel:${data.phone}`} class="inline-flex items-center gap-1.5 text-primary hover:text-primary-dark transition-colors">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+                </svg>
+                {data.phone}
+              </a>
+            )}
+            {data.website && (
+              <a href={data.website} target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-1.5 text-primary hover:text-primary-dark transition-colors">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9" />
+                </svg>
+                Web
+              </a>
+            )}
+            {data.instagram && (
+              <a href={`https://instagram.com/${data.instagram.replace('@', '')}`} target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-1.5 text-primary hover:text-primary-dark transition-colors">
+                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z" />
+                </svg>
+                {data.instagram}
+              </a>
+            )}
+          </div>
+        </div>
       </div>
     </div>
   </section>
 
-  <!-- Content Area -->
-  <section class="py-12 lg:py-20 bg-white">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-      <div class="grid grid-cols-1 lg:grid-cols-3 gap-12 lg:gap-16">
+  <!-- Editorial Intro (first 2 paragraphs) -->
+  <section class="py-10 lg:py-14 bg-white">
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="prose prose-lg max-w-none text-secondary/80 leading-relaxed" style="font-family: 'Heebo', sans-serif;">
+        {introParagraphs.map((p: string) => (
+          <p>{p}</p>
+        ))}
+      </div>
+    </div>
+  </section>
 
-        <!-- Main Content -->
-        <div class="lg:col-span-2">
-          <!-- Rating -->
-          <ScrollReveal client:visible>
-            <div class="flex items-center gap-6 mb-10 p-6 bg-warm rounded-2xl">
-              <div class="relative w-20 h-20 shrink-0">
-                <svg class="w-20 h-20 -rotate-90" viewBox="0 0 36 36">
-                  <path
-                    class="text-warm-dark"
-                    d="M18 2.0845a 15.9155 15.9155 0 0 1 0 31.831 15.9155 15.9155 0 0 1 0 -31.831"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="3"
-                  />
-                  <path
-                    class="text-gold"
-                    d="M18 2.0845a 15.9155 15.9155 0 0 1 0 31.831 15.9155 15.9155 0 0 1 0 -31.831"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="3"
-                    stroke-dasharray={`${ratingPct}, 100`}
-                    stroke-linecap="round"
-                  />
-                </svg>
-                <span class="absolute inset-0 flex items-center justify-center font-heading text-xl text-secondary">
-                  {data.rating}
-                </span>
-              </div>
-              <div>
-                <span class="text-secondary font-heading text-lg">Puntuación</span>
-                <span class="block text-secondary/50 text-sm font-nav">sobre {data.ratingScale}</span>
-              </div>
-            </div>
-          </ScrollReveal>
+  <!-- Menu / Gallery Slider -->
+  {sliderImages.length > 0 && (
+    <section class="py-10 lg:py-14 bg-white">
+      <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+        <h2 class="text-2xl font-heading text-secondary mb-6">Menú</h2>
+        <ImageSlider client:load images={sliderImages} restaurantName={data.name} />
+      </div>
+    </section>
+  )}
 
-          <!-- Review Content -->
-          <ScrollReveal client:visible delay={0.1}>
-            <div class="prose prose-lg max-w-none text-secondary/80 leading-relaxed">
-              <Content />
-            </div>
-          </ScrollReveal>
+  <!-- Menu description / highlight paragraph -->
+  {highlightParagraph && (
+    <section class="py-10 lg:py-14 bg-white">
+      <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="prose prose-lg max-w-none text-secondary/80 leading-relaxed" style="font-family: 'Heebo', sans-serif;">
+          <p>{highlightParagraph}</p>
+        </div>
+      </div>
+    </section>
+  )}
 
-          <!-- Gallery -->
-          {data.images.gallery && data.images.gallery.length > 0 && (
-            <ScrollReveal client:visible delay={0.2}>
-              <h2 class="text-2xl text-secondary mt-16 mb-6">Galería</h2>
-              <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
-                {data.images.gallery.map((img: string, i: number) => (
-                  <div class="rounded-xl overflow-hidden aspect-[4/3]">
-                    <img
-                      src={img}
-                      alt={`${data.name} - imagen ${i + 1}`}
-                      class="w-full h-full object-cover hover:scale-105 transition-transform duration-500"
-                      loading="lazy"
-                    />
-                  </div>
-                ))}
-              </div>
-            </ScrollReveal>
+  <!-- Highlighted Service Statement -->
+  {data.highlights && data.highlights.length > 0 && (
+    <section class="py-10 lg:py-14 bg-white">
+      <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="border-l-4 border-primary pl-6 py-2">
+          <h3 class="font-heading text-xl lg:text-2xl text-secondary mb-3">
+            {data.highlights[0]}
+          </h3>
+          {data.highlights.length > 1 && (
+            <p class="text-secondary/60 leading-relaxed" style="font-family: 'Heebo', sans-serif;">
+              {data.highlights.slice(1).join('. ')}.
+            </p>
           )}
         </div>
+      </div>
+    </section>
+  )}
 
-        <!-- Sidebar -->
-        <aside class="lg:col-span-1">
-          <div class="lg:sticky lg:top-24 space-y-6">
-            <!-- Info Card -->
-            <div class="bg-warm rounded-2xl p-6 space-y-4">
-              <h3 class="font-heading text-lg text-secondary border-b border-secondary/10 pb-3">Información</h3>
+  <!-- Full-width Interior Banner -->
+  {bannerImage && (
+    <section class="py-6 lg:py-10 bg-white">
+      <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="rounded-2xl overflow-hidden" style="max-height: 450px;">
+          <img
+            src={bannerImage}
+            alt={`Interior de ${data.name}`}
+            class="w-full h-full object-cover"
+            loading="lazy"
+          />
+        </div>
+      </div>
+    </section>
+  )}
 
-              {/* Chef */}
-              <div>
-                <span class="text-secondary/40 text-xs font-nav uppercase tracking-wider">Chef</span>
-                <p class="text-secondary font-medium">{data.chef.name}</p>
-                {data.chef.role && <p class="text-secondary/50 text-sm">{data.chef.role}</p>}
-              </div>
+  <!-- Closing Paragraphs -->
+  {closingParagraphs.length > 0 && (
+    <section class="py-10 lg:py-14 bg-white">
+      <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="prose prose-lg max-w-none text-secondary/80 leading-relaxed" style="font-family: 'Heebo', sans-serif;">
+          {closingParagraphs.map((p: string) => (
+            <p>{p}</p>
+          ))}
+        </div>
+      </div>
+    </section>
+  )}
 
-              {/* Front of House */}
-              {data.frontOfHouse && (
-                <div>
-                  <span class="text-secondary/40 text-xs font-nav uppercase tracking-wider">Sala</span>
-                  <p class="text-secondary font-medium">{data.frontOfHouse}</p>
-                </div>
-              )}
-
-              {/* Cuisine */}
-              <div>
-                <span class="text-secondary/40 text-xs font-nav uppercase tracking-wider">Cocina</span>
-                <div class="flex flex-wrap gap-2 mt-1">
-                  {data.cuisine.map((c: string) => (
-                    <span class="bg-white text-secondary/70 text-xs px-3 py-1 rounded-full">{c}</span>
-                  ))}
-                </div>
-              </div>
-
-              {/* Prices */}
-              <div>
-                <span class="text-secondary/40 text-xs font-nav uppercase tracking-wider">Precio medio</span>
-                <p class="text-secondary font-heading text-lg">~{formatPrice(data.priceRange.cartaAvg)}</p>
-                {data.priceRange.menuDegustacion && (
-                  <p class="text-secondary/50 text-sm">
-                    Menú: {formatPriceRange(data.priceRange.menuDegustacion.min, data.priceRange.menuDegustacion.max)}
-                  </p>
-                )}
-              </div>
-
-              {/* Year */}
-              {data.yearEstablished && (
-                <div>
-                  <span class="text-secondary/40 text-xs font-nav uppercase tracking-wider">Desde</span>
-                  <p class="text-secondary font-medium">{data.yearEstablished}</p>
-                </div>
-              )}
-            </div>
-
-            <!-- Contact Card -->
-            <div class="bg-warm rounded-2xl p-6 space-y-4">
-              <h3 class="font-heading text-lg text-secondary border-b border-secondary/10 pb-3">Contacto</h3>
-
-              <div>
-                <span class="text-secondary/40 text-xs font-nav uppercase tracking-wider">Dirección</span>
-                <p class="text-secondary text-sm">{data.address}</p>
-              </div>
-
-              <div>
-                <span class="text-secondary/40 text-xs font-nav uppercase tracking-wider">Teléfono</span>
-                <a href={`tel:${data.phone}`} class="block text-primary hover:text-primary-dark transition-colors text-sm">
-                  {data.phone}
-                </a>
-              </div>
-
-              {data.website && (
-                <div>
-                  <span class="text-secondary/40 text-xs font-nav uppercase tracking-wider">Web</span>
-                  <a href={data.website} target="_blank" rel="noopener noreferrer" class="block text-primary hover:text-primary-dark transition-colors text-sm truncate">
-                    {data.website.replace(/^https?:\/\//, '')}
-                  </a>
-                </div>
-              )}
-
-              {data.instagram && (
-                <div>
-                  <span class="text-secondary/40 text-xs font-nav uppercase tracking-wider">Instagram</span>
-                  <a
-                    href={`https://instagram.com/${data.instagram.replace('@', '')}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    class="block text-primary hover:text-primary-dark transition-colors text-sm"
-                  >
-                    {data.instagram}
-                  </a>
-                </div>
-              )}
-            </div>
-
-            {/* Highlights */}
-            {data.highlights && data.highlights.length > 0 && (
-              <div class="bg-warm rounded-2xl p-6">
-                <h3 class="font-heading text-lg text-secondary border-b border-secondary/10 pb-3 mb-4">Destacados</h3>
-                <ul class="space-y-2">
-                  {data.highlights.map((h: string) => (
-                    <li class="flex items-start gap-2 text-sm text-secondary/70">
-                      <span class="text-primary mt-0.5">•</span>
-                      {h}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
-          </div>
-        </aside>
+  <!-- Social Share -->
+  <section class="py-8 bg-white">
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="border-t border-secondary/10 pt-8">
+        <SocialShare client:load restaurantName={data.name} />
       </div>
     </div>
   </section>

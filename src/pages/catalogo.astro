@@ -2,7 +2,7 @@
 import { getCollection } from 'astro:content';
 import PageLayout from '../layouts/PageLayout.astro';
 import FilterChips from '../components/catalog/FilterChips.tsx';
-import OrganicShape from '../components/decorative/OrganicShape.astro';
+import { stripMarkdown, getCategoryBadges } from '../lib/utils';
 
 const allRestaurants = await getCollection('restaurants');
 const sorted = allRestaurants.sort((a, b) => a.data.order - b.data.order);
@@ -10,39 +10,35 @@ const sorted = allRestaurants.sort((a, b) => a.data.order - b.data.order);
 const base = import.meta.env.BASE_URL;
 const categories = [...new Set(sorted.map((r) => r.data.category))];
 
-const restaurantsData = sorted.map((r) => ({
-  slug: r.data.slug,
-  name: r.data.name,
-  category: r.data.category,
-  chef: r.data.chef.name,
-  rating: r.data.rating,
-  ratingScale: r.data.ratingScale,
-  priceAvg: r.data.priceRange.cartaAvg,
-  neighborhood: r.data.neighborhood || '',
-  heroImage: r.data.images.hero,
-}));
+const restaurantsData = sorted.map((r) => {
+  const rawBody = r.body || '';
+  const plainText = stripMarkdown(rawBody);
+  const excerpt = plainText.length > 150 ? plainText.slice(0, 150) + '...' : plainText;
+
+  return {
+    slug: r.data.slug,
+    name: r.data.name,
+    category: r.data.category,
+    chef: r.data.chef.name,
+    rating: r.data.rating,
+    ratingScale: r.data.ratingScale,
+    priceAvg: r.data.priceRange.cartaAvg,
+    neighborhood: r.data.neighborhood || '',
+    address: r.data.address,
+    heroImage: r.data.images.hero,
+    excerpt,
+    badges: getCategoryBadges(r.data.category),
+  };
+});
 ---
 
 <PageLayout
   title="Catálogo — Almanaque Gastronómico"
   description="Explora nuestra selección de los mejores restaurantes de Valencia y la Comunidad Valenciana."
 >
-  <!-- Page Hero -->
-  <section class="pt-28 pb-16 bg-secondary relative overflow-hidden">
-    <OrganicShape variant={1} className="-top-20 -right-20 w-[400px] h-[400px]" color="var(--color-primary)" />
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-      <h1 class="text-white font-heading text-4xl lg:text-5xl mb-4">
-        Nuestro <span class="text-primary">Catálogo</span>
-      </h1>
-      <p class="text-white/60 text-lg max-w-xl">
-        Los mejores restaurantes de Valencia, evaluados de forma independiente
-      </p>
-    </div>
-  </section>
-
   <!-- Catalog Content -->
-  <section class="py-12 lg:py-16 bg-warm-light">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+  <section class="pt-28 pb-12 lg:pt-32 lg:pb-16 bg-warm-light min-h-screen">
+    <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
       <FilterChips
         client:load
         restaurants={restaurantsData}
